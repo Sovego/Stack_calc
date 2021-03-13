@@ -66,13 +66,13 @@ void output_list(node* top)
 
 int getPriority(char c) {
 	if (c == '-' || c == '+') return 1;
-	else if (c == '*' || c == '/') return 2;
+	if (c == '*' || c == '/') return 2;
 	return 0;
 }
 
-std::string ToStackCalculator(std::string str, struct node* Stack) {
-	node* TempStack = new node;
+std::string t_postfix(std::string str, struct node* Stack) {
 	std::string x;
+	std::string out_str;
 	while (str.length() > 0) {
 		x = "";
 		if (str[0] == '(') {		
@@ -81,7 +81,7 @@ std::string ToStackCalculator(std::string str, struct node* Stack) {
 		}							
 		else if (str[0] == ')') {								
 			while (Stack->value != "(") {				
-				TempStack=add_element_top(TempStack, Stack->value);	
+				out_str+=Stack->value + " ";	
 				Stack=del_top(Stack);							
 			}													
 			Stack=del_top(Stack);									
@@ -90,48 +90,30 @@ std::string ToStackCalculator(std::string str, struct node* Stack) {
 		else if (!isdigit(str[0]) && str[0] != ',') {												
 			x = str[0];																				
 			while (Stack!=nullptr && getPriority(Stack->value[0]) >= getPriority(x[0])) {	
-				TempStack=add_element_top(TempStack, Stack->value);										
+				out_str+=Stack->value + " ";										
 				Stack=del_top(Stack);																
 			}																						
 			Stack=add_element_top(Stack, x);																	
 		}																							
 		else {															
-			for (char& c : str) if (isdigit(c) || c == ',') x = x + c;	
-			else break;													
-			TempStack=add_element_top(TempStack, x);									
+			for (char& c : str)
+			{
+				if (!isdigit(c) && c != ',') break;
+				x = x + c;
+			}
+			out_str+=x + " ";									
 		}																
 		str.erase(0, x.length());									
 	}																	
 	while (Stack!=nullptr) {
-		TempStack=add_element_top(TempStack, Stack->value);
+		out_str+=Stack->value + " ";
 		Stack=del_top(Stack);
 	}
-	x="";
-	while(TempStack!=nullptr)
-	{
-		x=" " + TempStack->value + x;
-		TempStack=del_top(TempStack);
-	}
-	return x;
-}
-int main()
-{
-	std::string in_str;
-	node* top = nullptr;
-	std::cout << "Input ";
-	std::cin >> in_str;
-	if (in_str[0] == '-')
-	{
-		in_str = '0' + in_str;
-	}
-	for (int i = 1; i < in_str.length(); ++i)
-		if (in_str[i - 1] == '(' && (in_str[i] == '-' || in_str[i] == '+'))
-			in_str.insert(i, "0");
 	
-	std::string out_str = ToStackCalculator(in_str, top);
-	std::cout << std::endl << out_str;
-
-
+	return out_str;
+}
+node* result (node* top, std::string out_str)
+{
 	for (int i = 0; i < out_str.length(); i++)
 	{
 		if (out_str[i] == '*' || out_str[i] == '/' || out_str[i] == '+' || out_str[i] == '-')
@@ -176,5 +158,23 @@ int main()
 			}
 		}
 	}
-	std::cout << std::endl << top->value;
+	return top;
+}
+int main()
+{
+	std::string in_str;
+	node* top = nullptr;
+	std::cout << "Input ";
+	std::cin >> in_str;
+	if (in_str[0] == '-')
+	{
+		in_str = '0' + in_str;
+	}
+	for (int i = 1; i < in_str.length(); ++i)
+		if (in_str[i - 1] == '(' && (in_str[i] == '-' || in_str[i] == '+'))
+			in_str.insert(i, "0");
+	std::string out_str = t_postfix(in_str, top);
+	std::cout << std::endl << out_str;
+	top=result(top,out_str);
+	std::cout << std::endl <<top->value;
 }
